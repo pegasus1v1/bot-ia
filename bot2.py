@@ -6,7 +6,7 @@ from datetime import datetime
 import os
 
 
-TOKEN = 'MTAyNjYwNjYzMjkwMzM4NTE1OA.G7iKXP.00es2C5D78D6kyLFMnmE_I8d6fNAq0nF6lNEUU'  # ! Reemplaza con tu token real
+TOKEN = 'MTAyNjYwNjYzMjkwMzM4NTE1OA.Gj_L8k.gvorEOMPKD4Op33nH2snDjXWomfMn7zeLeEs9M'  # ! Reemplaza con tu token real
 CANAL_PERMITIDO_ID = 1380015764030881903  # ✅ Reemplaza con tu canal real
 
 intents = discord.Intents.default()
