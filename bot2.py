@@ -11,31 +11,41 @@ intents = discord.Intents.default()
 bot = discord.Client(intents=intents)
 tree = app_commands.CommandTree(bot)
 
-DATA_URL = "https://firebasestorage.googleapis.com/v0/b/pegacoment.appspot.com/o/renien.json?alt=media&token=7353d0a7-dfac-4408-8cd0-4361bc41d008"
+DATA_URLS = [
+    "https://firebasestorage.googleapis.com/v0/b/pegacoment.appspot.com/o/reniec_lote_1.json?alt=media&token=3362066a-1752-4727-b82b-8b388de29ffc",
+    "https://firebasestorage.googleapis.com/v0/b/pegacoment.appspot.com/o/reniec_lote_2.json?alt=media&token=f4b5956f-4d6a-4322-a81e-b1acc254e2ea",
+    "https://firebasestorage.googleapis.com/v0/b/pegacoment.appspot.com/o/reniec_lote_3.json?alt=media&token=e78ea24f-52bd-4a39-b93a-384d8de9ad5a",
+]
 
-async def obtener_datos():
-    async with aiohttp.ClientSession() as session:
-        async with session.get(DATA_URL) as resp:
-            if resp.status == 200:
-                return await resp.json()
-            else:
-                return []
-
-def buscar_personas(datos, nombres=None, ap_pat=None, ap_mat=None, dni=None):
+async def buscar_en_url(session, url, nombres=None, ap_pat=None, ap_mat=None, dni=None, max_resultados=50):
     resultados = []
-    for p in datos:
-        if dni and p.get("DNI") != dni:
-            continue
-        if nombres and nombres not in p.get("NOMBRES", ""):
-            continue
-        if ap_pat and ap_pat not in p.get("AP_PAT", ""):
-            continue
-        if ap_mat and ap_mat not in p.get("AP_MAT", ""):
-            continue
-        resultados.append(p)
-        if len(resultados) >= 50:
-            break
+    async with session.get(url) as resp:
+        if resp.status != 200:
+            return resultados
+        datos = await resp.json()
+        for p in datos:
+            if dni and p.get("DNI") != dni:
+                continue
+            if nombres and nombres not in p.get("NOMBRES", ""):
+                continue
+            if ap_pat and ap_pat not in p.get("AP_PAT", ""):
+                continue
+            if ap_mat and ap_mat not in p.get("AP_MAT", ""):
+                continue
+            resultados.append(p)
+            if len(resultados) >= max_resultados:
+                break
     return resultados
+
+async def buscar_personas_varios_lotes(nombres=None, ap_pat=None, ap_mat=None, dni=None, max_resultados=50):
+    resultados_totales = []
+    async with aiohttp.ClientSession() as session:
+        for url in DATA_URLS:
+            resultados_lote = await buscar_en_url(session, url, nombres, ap_pat, ap_mat, dni, max_resultados - len(resultados_totales))
+            resultados_totales.extend(resultados_lote)
+            if len(resultados_totales) >= max_resultados:
+                break
+    return resultados_totales
 
 def calcular_edad(fecha_nac_str):
     try:
@@ -68,6 +78,7 @@ def generar_payload_embed(persona):
         "footer": {"text": "Datos extraídos por ❣ℜ𝔲𝔟𝔦❣"},
         "image": {"url": "https://assets.isthereanydeal.com/018d937f-15d1-7105-b09a-6ce4199e5ad8/banner400.jpg?t=1731711306"}
     }
+
     return embed
 
 @tree.command(name="buscar", description="Buscar persona")
@@ -84,12 +95,7 @@ async def buscar(interaction: discord.Interaction, nombres: str = None, ap_pat: 
 
     await interaction.response.defer()
 
-    datos = await obtener_datos()
-    if not datos:
-        await interaction.followup.send("❌ No se pudo obtener la base de datos. Intenta más tarde.")
-        return
-
-    resultados = buscar_personas(datos, nombres=nombres, ap_pat=ap_pat, ap_mat=ap_mat, dni=dni)
+    resultados = await buscar_personas_varios_lotes(nombres, ap_pat, ap_mat, dni)
     if not resultados:
         await interaction.followup.send("❌ No se encontraron resultados.")
         return
@@ -105,7 +111,7 @@ async def on_ready():
     print(f"🤖 Bot listo como {bot.user}")
     await bot.change_presence(
         status=discord.Status.dnd,
-        activity=discord.Game(name="Esperando consultas")
+        activity=discord.Game(name="Esperando comandos...")
     )
 
 bot.run(DISCORD_TOKEN)
