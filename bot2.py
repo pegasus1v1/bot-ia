@@ -1,24 +1,18 @@
-# main.py
-import os
 import discord
 from discord import app_commands
-from dotenv import load_dotenv
 import aiohttp
 import asyncio
 from datetime import datetime
 import os
 
-# Cargar entorno
-load_dotenv()
-TOKEN = os.getenv("DISCORD_TOKEN")
-CANAL_PERMITIDO_ID = 1380015764030881903
+# * Variables de entorno
+TOKEN = os.getenv("token")  # Asegúrate de que se llame exactamente "token" en Railway
+CANAL_PERMITIDO_ID = int(os.getenv("CANAL_PERMITIDO_ID", "0"))
 
-# Configurar intents y bot
-intents = discord.Intents.default()
-bot = discord.Client(intents=intents)
-tree = app_commands.CommandTree(bot)
+if not TOKEN:
+    raise ValueError("❌ TOKEN no definido en variables de entorno")
 
-
+# * Intents
 intents = discord.Intents.default()
 bot = discord.Client(intents=intents)
 tree = app_commands.CommandTree(bot)
