@@ -116,5 +116,9 @@ async def on_ready():
     await cargar_datos()
     await tree.sync()
     print(f"🤖 Bot listo como {bot.user}")
+    await bot.change_presence(
+        status=discord.Status.dnd, 
+        activity=discord.Game(name="Base de datos al 100% cargada") 
+    )
 
 bot.run(DISCORD_TOKEN)
