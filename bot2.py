@@ -1,13 +1,23 @@
+# main.py
+import os
 import discord
 from discord import app_commands
+from dotenv import load_dotenv
 import aiohttp
 import asyncio
 from datetime import datetime
 import os
 
+# Cargar entorno
+load_dotenv()
+TOKEN = os.getenv("DISCORD_TOKEN")
+CANAL_PERMITIDO_ID = 1380015764030881903
 
-TOKEN = 'MTAyNjYwNjYzMjkwMzM4NTE1OA.Gj_L8k.gvorEOMPKD4Op33nH2snDjXWomfMn7zeLeEs9M'  # ! Reemplaza con tu token real
-CANAL_PERMITIDO_ID = 1380015764030881903  # ✅ Reemplaza con tu canal real
+# Configurar intents y bot
+intents = discord.Intents.default()
+bot = discord.Client(intents=intents)
+tree = app_commands.CommandTree(bot)
+
 
 intents = discord.Intents.default()
 bot = discord.Client(intents=intents)
