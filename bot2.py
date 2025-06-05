@@ -16,8 +16,9 @@ tree = app_commands.CommandTree(bot)
 
 # * URLs de los archivos JSON online
 DATA_URLS = [
-    "https://firebasestorage.googleapis.com/v0/b/pegacoment.appspot.com/o/renien.json?alt=media&token=7353d0a7-dfac-4408-8cd0-4361bc41d008",
-
+    "https://firebasestorage.googleapis.com/v0/b/pegacoment.appspot.com/o/reniec_lote_1.json?alt=media&token=3362066a-1752-4727-b82b-8b388de29ffc",
+    "https://firebasestorage.googleapis.com/v0/b/pegacoment.appspot.com/o/reniec_lote_2.json?alt=media&token=f4b5956f-4d6a-4322-a81e-b1acc254e2ea",
+    "https://firebasestorage.googleapis.com/v0/b/pegacoment.appspot.com/o/reniec_lote_3.json?alt=media&token=e78ea24f-52bd-4a39-b93a-384d8de9ad5a",
 ]
 
 # * Cache global para datos
