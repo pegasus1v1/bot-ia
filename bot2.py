@@ -4,7 +4,6 @@ import aiohttp
 import asyncio
 from datetime import datetime
 import os
-import webserver
 
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN') 
 # TOKEN = 'MTAyNjYwNjYzMjkwMzM4NTE1OA.G7iKXP.00es2C5D78D6kyLFMnmE_I8d6fNAq0nF6lNEUU'  # ! Reemplaza con tu token real
@@ -118,5 +117,4 @@ async def on_ready():
     await tree.sync()
     print(f"🤖 Bot listo como {bot.user}")
 
-webserver.keep_alive()  # Iniciar el servidor web para mantener el bot activo
 bot.run(DISCORD_TOKEN)
