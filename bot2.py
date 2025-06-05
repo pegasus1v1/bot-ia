@@ -1,42 +1,29 @@
 import discord
 from discord import app_commands
 import aiohttp
-import asyncio
 from datetime import datetime
 import os
 
-DISCORD_TOKEN = os.getenv('DISCORD_TOKEN') 
-# TOKEN = 'MTAyNjYwNjYzMjkwMzM4NTE1OA.G7iKXP.00es2C5D78D6kyLFMnmE_I8d6fNAq0nF6lNEUU'  # ! Reemplaza con tu token real
-CANAL_PERMITIDO_ID = 1380015764030881903  # ✅ Reemplaza con tu canal real
+DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+CANAL_PERMITIDO_ID = 1380015764030881903
 
 intents = discord.Intents.default()
 bot = discord.Client(intents=intents)
 tree = app_commands.CommandTree(bot)
 
-# * URLs de los archivos JSON online
-DATA_URLS = [
-    "https://firebasestorage.googleapis.com/v0/b/pegacoment.appspot.com/o/renien.json?alt=media&token=7353d0a7-dfac-4408-8cd0-4361bc41d008"
-]
+DATA_URL = "https://firebasestorage.googleapis.com/v0/b/pegacoment.appspot.com/o/renien.json?alt=media&token=7353d0a7-dfac-4408-8cd0-4361bc41d008"
 
-# * Cache global para datos
-data_cache = []
-
-# * Carga todos los JSON remotos al iniciar
-async def cargar_datos():
-    global data_cache
-    data_cache.clear()
+async def obtener_datos():
     async with aiohttp.ClientSession() as session:
-        for url in DATA_URLS:
-            async with session.get(url) as resp:
-                if resp.status == 200:
-                    json_data = await resp.json()
-                    data_cache.extend(json_data)
-    print(f"✅ {len(data_cache)} registros cargados en memoria")
+        async with session.get(DATA_URL) as resp:
+            if resp.status == 200:
+                return await resp.json()
+            else:
+                return []
 
-# * Buscar por DNI o nombres
-def buscar_personas(nombres=None, ap_pat=None, ap_mat=None, dni=None):
+def buscar_personas(datos, nombres=None, ap_pat=None, ap_mat=None, dni=None):
     resultados = []
-    for p in data_cache:
+    for p in datos:
         if dni and p.get("DNI") != dni:
             continue
         if nombres and nombres not in p.get("NOMBRES", ""):
@@ -81,7 +68,6 @@ def generar_payload_embed(persona):
         "footer": {"text": "Datos extraídos por ❣ℜ𝔲𝔟𝔦❣"},
         "image": {"url": "https://assets.isthereanydeal.com/018d937f-15d1-7105-b09a-6ce4199e5ad8/banner400.jpg?t=1731711306"}
     }
-
     return embed
 
 @tree.command(name="buscar", description="Buscar persona")
@@ -98,8 +84,12 @@ async def buscar(interaction: discord.Interaction, nombres: str = None, ap_pat: 
 
     await interaction.response.defer()
 
-    resultados = buscar_personas(nombres=nombres, ap_pat=ap_pat, ap_mat=ap_mat, dni=dni)
+    datos = await obtener_datos()
+    if not datos:
+        await interaction.followup.send("❌ No se pudo obtener la base de datos. Intenta más tarde.")
+        return
 
+    resultados = buscar_personas(datos, nombres=nombres, ap_pat=ap_pat, ap_mat=ap_mat, dni=dni)
     if not resultados:
         await interaction.followup.send("❌ No se encontraron resultados.")
         return
@@ -111,12 +101,11 @@ async def buscar(interaction: discord.Interaction, nombres: str = None, ap_pat: 
 
 @bot.event
 async def on_ready():
-    await cargar_datos()
     await tree.sync()
     print(f"🤖 Bot listo como {bot.user}")
     await bot.change_presence(
-        status=discord.Status.dnd, 
-        activity=discord.Game(name="Base de datos al 100% cargada") 
+        status=discord.Status.dnd,
+        activity=discord.Game(name="Esperando consultas")
     )
 
 bot.run(DISCORD_TOKEN)
